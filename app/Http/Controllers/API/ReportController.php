@@ -17,6 +17,7 @@ class ReportController extends Controller
 
         return response()->json([
             'project' => $project->title,
+            'project-description'=>$project->description,
             'tasks' => $report
         ]);
     }

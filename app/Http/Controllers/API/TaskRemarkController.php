@@ -5,7 +5,7 @@ use App\Models\Task;
 use App\Models\TaskRemark;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
+use Illuminate\Support\Carbon;
 class TaskRemarkController extends Controller
 {
     public function index(Task $task)
@@ -18,18 +18,23 @@ class TaskRemarkController extends Controller
     {
         $this->authorizeUser($task->project);
 
-        $request->validate([
-            'remark_date' => 'required|date',
-            'remark' => 'required|string',
-        ]);
+    // Validate only the remark field
+    $request->validate([
+        'remark' => 'required|string',
+    ]);
 
-        // Either create or update existing remark
-        $remark = TaskRemark::updateOrCreate(
-            ['task_id' => $task->id, 'remark_date' => $request->remark_date],
-            ['remark' => $request->remark]
-        );
+    $today = Carbon::today()->toDateString(); // Get current date (Y-m-d)
 
-        return $remark;
+    // Create or update today's remark
+    $remark = TaskRemark::updateOrCreate(
+        ['task_id' => $task->id, 'remark_date' => $today],
+        ['remark' => $request->remark]
+    );
+
+    return response()->json([
+        'message' => 'Remark saved successfully.',
+        'data' => $remark,
+    ], 200);
     }
 
     protected function authorizeUser($project)
